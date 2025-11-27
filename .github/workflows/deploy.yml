@@ -21,6 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Reset npm auth
+        run: |
+          rm -f ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
+          echo "always-auth=false" >> ~/.npmrc
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
