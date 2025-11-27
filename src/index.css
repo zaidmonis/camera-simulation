@@ -282,6 +282,7 @@ button.primary {
   gap: 0.75rem;
   flex: 1;
   min-height: 0;
+  align-items: flex-start;
 }
 
 .field-info {
@@ -293,8 +294,7 @@ button.primary {
 
 .field-svg {
   width: 100%;
-  flex: 1;
-  min-height: 280px;
+  height: clamp(220px, 30vh, 360px);
   display: block;
 }
 
