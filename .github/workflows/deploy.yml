@@ -21,12 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Reset npm auth
-        run: |
-          rm -f ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
-          echo "always-auth=false" >> ~/.npmrc
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,6 +29,8 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build
         run: npm run build
