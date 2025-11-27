@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FIELD_LENGTH_M, FIELD_WIDTH_M } from '../constants';
-import { distance, getBackgroundInfo, horizontalFov, projectRayToField } from '../lib/calculations';
+import { distance, distanceToViewBoundary, horizontalFov, projectRayToField } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 function useSvgPoint(svgRef: React.RefObject<SVGSVGElement>) {
@@ -31,23 +31,43 @@ export default function FieldView() {
   const handleDown = (type: 'camera' | 'player', id?: string) =>
     setDragging({ type, id });
 
+  const updatePosition = useCallback(
+    (clientX: number, clientY: number) => {
+      if (!dragging) return;
+      const posMeters = projector(clientX, clientY);
+      if (dragging.type === 'camera') {
+        setCamera(posMeters);
+      } else if (dragging.type === 'player' && dragging.id) {
+        movePlayer(dragging.id, posMeters);
+      }
+    },
+    [dragging, movePlayer, projector, setCamera]
+  );
+
   const handleMove: React.PointerEventHandler<SVGSVGElement> = (evt) => {
-    if (!dragging) return;
-    const posMeters = projector(evt.clientX, evt.clientY);
-    if (dragging.type === 'camera') {
-      setCamera(posMeters);
-    } else if (dragging.type === 'player' && dragging.id) {
-      movePlayer(dragging.id, posMeters);
-    }
+    updatePosition(evt.clientX, evt.clientY);
   };
 
   const handleUp = () => setDragging(null);
 
+  useEffect(() => {
+    if (!dragging) return;
+    const handleGlobalMove = (evt: PointerEvent) => {
+      updatePosition(evt.clientX, evt.clientY);
+    };
+    const handleGlobalUp = () => setDragging(null);
+    window.addEventListener('pointermove', handleGlobalMove);
+    window.addEventListener('pointerup', handleGlobalUp);
+    window.addEventListener('pointercancel', handleGlobalUp);
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalMove);
+      window.removeEventListener('pointerup', handleGlobalUp);
+      window.removeEventListener('pointercancel', handleGlobalUp);
+    };
+  }, [dragging, updatePosition]);
+
   const selectedPlayer = players.find((p) => p.id === selectedPlayerId) ?? players[0];
   const playerDistance = distances.find((d) => d.id === selectedPlayerId)?.value ?? 0;
-  const backgroundInfo = getBackgroundInfo(camera);
-  const backgroundDistance = backgroundInfo.distance;
-
   const viewVector = {
     x: selectedPlayer.position.x - camera.x,
     y: selectedPlayer.position.y - camera.y
@@ -58,6 +78,8 @@ export default function FieldView() {
     : Math.atan2(FIELD_WIDTH_M / 2 - camera.y, FIELD_LENGTH_M / 2 - camera.x);
   const hfov = horizontalFov(focalLength);
   const halfFov = hfov / 2;
+  const viewEdge = distanceToViewBoundary(camera, viewAngle);
+  const backgroundDistance = viewEdge.distance;
   const leftBeam = projectRayToField(camera, viewAngle - halfFov);
   const rightBeam = projectRayToField(camera, viewAngle + halfFov);
 
@@ -97,10 +119,8 @@ export default function FieldView() {
             ref={svgRef}
             className="field-svg"
             viewBox={`-50 -50 ${FIELD_LENGTH_M * 10 + 100} ${FIELD_WIDTH_M * 10 + 100}`}
-            onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
             onPointerMove={handleMove}
             onPointerUp={handleUp}
-            onPointerLeave={handleUp}
           >
             <defs>
               <pattern id="turf" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
@@ -194,9 +214,9 @@ export default function FieldView() {
                   strokeWidth={2}
                 />
                 <text
-                  x={player.position.x * 10 + 12}
-                  y={player.position.y * 10 - 12}
-                  fontSize={12}
+                  x={player.position.x * 10 + 14}
+                  y={player.position.y * 10 - 14}
+                  fontSize={24}
                   fill="#0f172a"
                 >
                   {player.label}

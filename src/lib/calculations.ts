@@ -163,6 +163,14 @@ export function projectRayToField(origin: { x: number; y: number }, angle: numbe
   };
 }
 
+export function distanceToViewBoundary(camera: { x: number; y: number }, angle: number) {
+  const point = projectRayToField(camera, angle);
+  return {
+    point,
+    distance: distance(camera, point)
+  };
+}
+
 export function getBackgroundInfo(camera: { x: number; y: number }): BackgroundInfo {
   const candidates: Array<{ wall: FieldWall; distance: number }> = [
     { wall: 'left', distance: Math.abs(camera.x - 0) },

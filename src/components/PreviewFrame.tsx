@@ -1,7 +1,8 @@
 import backgroundImage from '../assets/background.jpg';
 import playerImage from '../assets/player.png';
+import { FIELD_LENGTH_M, FIELD_WIDTH_M } from '../constants';
 import { useEffect, useRef, useState } from 'react';
-import { distance, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops, autoIso, getBackgroundInfo } from '../lib/calculations';
+import { distance, distanceToViewBoundary, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops, autoIso } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { getSelectedPlayer } from '../store/usePlannerStore';
 
@@ -48,8 +49,16 @@ export default function PreviewFrame() {
   const diffStops = exposureDifferenceStops(state.lighting.ev100, state.aperture, state.shutter, activeIso);
 
   const figureFillPercent = Math.max(6, Math.min(fill, 100));
-  const backgroundInfo = getBackgroundInfo(state.camera);
-  const backgroundDistance = Math.max(dist + 0.1, backgroundInfo.distance);
+  const viewVector = {
+    x: player.position.x - state.camera.x,
+    y: player.position.y - state.camera.y
+  };
+  const hasDirection = Math.abs(viewVector.x) > 1e-3 || Math.abs(viewVector.y) > 1e-3;
+  const viewAngle = hasDirection
+    ? Math.atan2(viewVector.y, viewVector.x)
+    : Math.atan2(FIELD_WIDTH_M / 2 - state.camera.y, FIELD_LENGTH_M / 2 - state.camera.x);
+  const viewEdge = distanceToViewBoundary(state.camera, viewAngle);
+  const backgroundDistance = Math.max(dist + 0.1, viewEdge.distance + 5);
   const pxScale = frameWidth / 36;
   const backgroundBlur = computeBackgroundBlurPx(
     state.focalLength,

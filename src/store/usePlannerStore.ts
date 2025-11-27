@@ -55,8 +55,8 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   setCamera: (pos) =>
     set(() => ({
       camera: {
-        x: clamp(pos.x, -5, FIELD_LENGTH_M + 5),
-        y: clamp(pos.y, -5, FIELD_WIDTH_M + 5)
+        x: clamp(pos.x, -2, FIELD_LENGTH_M + 2),
+        y: clamp(pos.y, -2, FIELD_WIDTH_M + 2)
       }
     })),
   movePlayer: (id, pos) =>
