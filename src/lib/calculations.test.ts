@@ -4,7 +4,7 @@ import { autoIso, exposureDifferenceStops, frameFillPercent, recommendedIso, ver
 describe('exposure math', () => {
   it('computes ISO for daylight settings', () => {
     const iso = recommendedIso(15, 4, 1 / 1000);
-    expect(Math.round(iso)).toBe(50);
+    expect(Math.round(iso)).toBe(49);
   });
 
   it('rounds auto ISO to nearest real-world step and clamps to range', () => {

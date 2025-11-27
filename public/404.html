@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting…</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="refresh" content="0; url=/" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: #0f172a;
+        color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <p>This site requires JavaScript. Please enable it and reload.</p>
+    </noscript>
+    <p>Loading…</p>
+    <script>
+      (function () {
+        var l = window.location;
+        var segments = l.pathname.split('/').filter(Boolean);
+        if (segments.length > 1) {
+          var repoPath = '/' + segments[0] + '/';
+          sessionStorage.setItem('gh:redirect', l.pathname + l.search + l.hash);
+          window.location.replace(repoPath);
+        } else {
+          var redirect = sessionStorage.getItem('gh:redirect');
+          sessionStorage.removeItem('gh:redirect');
+          if (redirect) {
+            window.history.replaceState(null, null, redirect);
+          }
+          window.location.replace('/');
+        }
+      })();
+    </script>
+  </body>
+</html>
