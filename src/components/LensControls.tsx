@@ -1,14 +1,25 @@
 import { lenses } from '../constants';
+import { STANDARD_SHUTTER_VALUES, getApertureStopsInRange } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 
-const shutterOptions = [
-  { label: '1/250', value: 1 / 250 },
-  { label: '1/500', value: 1 / 500 },
-  { label: '1/800', value: 1 / 800 },
-  { label: '1/1000', value: 1 / 1000 },
-  { label: '1/1600', value: 1 / 1600 },
-  { label: '1/2000', value: 1 / 2000 }
-];
+const shutterOptions = STANDARD_SHUTTER_VALUES.map((value) => ({
+  label: `1/${Math.round(1 / value)}`,
+  value
+}));
+
+const findClosestIndex = (values: number[], target: number) => {
+  if (!values.length) return 0;
+  let closest = 0;
+  let minDiff = Math.abs(values[0] - target);
+  for (let i = 1; i < values.length; i += 1) {
+    const diff = Math.abs(values[i] - target);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closest = i;
+    }
+  }
+  return closest;
+};
 
 export default function LensControls() {
   const {
@@ -22,6 +33,8 @@ export default function LensControls() {
     setShutter
   } = usePlannerStore();
   const range = lens.apertureAt(focalLength);
+  const apertureStops = getApertureStopsInRange(range.min, range.max);
+  const apertureIndex = findClosestIndex(apertureStops, aperture);
 
   return (
     <div className="panel">
@@ -76,14 +89,18 @@ export default function LensControls() {
         <div className="label">Aperture (f/{range.min.toFixed(1)} – f/{range.max})</div>
         <input
           type="range"
-          min={range.min}
-          max={Math.max(range.max, range.min + 0.1)}
-          step={0.1}
+          min={0}
+          max={Math.max(apertureStops.length - 1, 0)}
+          step={1}
           className="range"
-          value={aperture}
-          onChange={(e) => setAperture(Number(e.target.value))}
+          value={apertureIndex}
+          onChange={(e) => {
+            const idx = Number(e.target.value);
+            const nextValue = apertureStops[idx] ?? apertureStops[apertureStops.length - 1] ?? aperture;
+            setAperture(nextValue);
+          }}
         />
-        <div style={{ marginTop: 6 }}>{`f/${aperture.toFixed(1)}`}</div>
+        <div style={{ marginTop: 6 }}>{`f/${(apertureStops[apertureIndex] ?? aperture).toFixed(1)}`}</div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import { FIELD_LENGTH_M, FIELD_WIDTH_M } from '../constants';
-import { distance } from '../lib/calculations';
+import { distance, getBackgroundInfo, horizontalFov, projectRayToField } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 function useSvgPoint(svgRef: React.RefObject<SVGSVGElement>) {
@@ -18,7 +18,7 @@ function useSvgPoint(svgRef: React.RefObject<SVGSVGElement>) {
 export default function FieldView() {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const projector = useSvgPoint(svgRef);
-  const { camera, players, movePlayer, setCamera, selectedPlayerId, setSelectedPlayer } =
+  const { camera, players, movePlayer, setCamera, selectedPlayerId, setSelectedPlayer, focalLength } =
     usePlannerStore();
   const [dragging, setDragging] = useState<{ type: 'camera' | 'player'; id?: string } | null>(
     null
@@ -43,13 +43,29 @@ export default function FieldView() {
 
   const handleUp = () => setDragging(null);
 
+  const selectedPlayer = players.find((p) => p.id === selectedPlayerId) ?? players[0];
   const playerDistance = distances.find((d) => d.id === selectedPlayerId)?.value ?? 0;
+  const backgroundInfo = getBackgroundInfo(camera);
+  const backgroundDistance = backgroundInfo.distance;
+
+  const viewVector = {
+    x: selectedPlayer.position.x - camera.x,
+    y: selectedPlayer.position.y - camera.y
+  };
+  const hasDirection = Math.abs(viewVector.x) > 1e-3 || Math.abs(viewVector.y) > 1e-3;
+  const viewAngle = hasDirection
+    ? Math.atan2(viewVector.y, viewVector.x)
+    : Math.atan2(FIELD_WIDTH_M / 2 - camera.y, FIELD_LENGTH_M / 2 - camera.x);
+  const hfov = horizontalFov(focalLength);
+  const halfFov = hfov / 2;
+  const leftBeam = projectRayToField(camera, viewAngle - halfFov);
+  const rightBeam = projectRayToField(camera, viewAngle + halfFov);
 
   return (
     <div className="panel field-panel">
       <div className="flex-between">
         <h3 className="section-title">Field & Positions</h3>
-        <span className="tag">National Hockey Stadium · 91.4 × 55 m</span>
+        <span className="tag">Hockey Stadium · 91.4 × 55 m</span>
       </div>
       <div className="field-wrapper">
         <div className="field-body">
@@ -59,7 +75,7 @@ export default function FieldView() {
                 <span className="dot" style={{ background: '#fb7185' }} /> Camera
               </span>
               <span>
-                <span className="dot" style={{ background: '#2563eb' }} /> Target player link
+                <span className="dot" style={{ background: '#2563eb' }} /> Target subject link
               </span>
             </div>
             <div className="field-metrics">
@@ -68,8 +84,12 @@ export default function FieldView() {
                 <span>{camera.x.toFixed(1)} m, {camera.y.toFixed(1)} m</span>
               </div>
               <div className="metric">
-                <strong>Distance to target</strong>
+                <strong>Distance to subject</strong>
                 <span>{playerDistance.toFixed(1)} m</span>
+              </div>
+              <div className="metric">
+                <strong>Distance to background</strong>
+                <span>{backgroundDistance.toFixed(1)} m</span>
               </div>
             </div>
           </div>
@@ -99,6 +119,14 @@ export default function FieldView() {
               strokeWidth={2}
               rx={12}
             />
+            {leftBeam && rightBeam && (
+              <path
+                d={`M${camera.x * 10},${camera.y * 10} L${leftBeam.x * 10},${leftBeam.y * 10} L${rightBeam.x * 10},${rightBeam.y * 10} Z`}
+                fill="rgba(37, 99, 235, 0.08)"
+                stroke="rgba(37, 99, 235, 0.3)"
+                strokeWidth={1}
+              />
+            )}
             <line
               x1={FIELD_LENGTH_M * 5}
               y1={0}

@@ -9,7 +9,7 @@ function Header() {
     <header style={{ padding: '1.25rem 1.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
       <div style={{ width: 10, height: 28, borderRadius: 12, background: '#2563eb' }} />
       <div>
-        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Lacrosse Sixes Camera Planner</h1>
+        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Camera Planner</h1>
       </div>
     </header>
   );
@@ -20,10 +20,10 @@ function Insights() {
     usePlannerStore();
   return (
     <div className="panel">
-      <h3 className="section-title">Players & Subject</h3>
+      <h3 className="section-title">Models & Subject</h3>
       <div className="control-row">
         <div>
-          <div className="label">Active player</div>
+          <div className="label">Active subject</div>
           <select
             className="input"
             value={selectedPlayerId}
@@ -37,7 +37,7 @@ function Insights() {
           </select>
         </div>
         <div>
-          <div className="label">Player height (m)</div>
+          <div className="label">Subject height (m)</div>
           <input
             className="input"
             type="number"
@@ -50,8 +50,8 @@ function Insights() {
         </div>
       </div>
       <p style={{ color: '#475569', marginTop: '0.75rem' }}>
-        Drag players inside the field and the camera along sidelines to match your planned shooting
-        angles. The selected player controls the frame preview and exposure math.
+        Drag subjects inside the field and the camera along sidelines to match your planned shooting
+        angles. The selected subject controls the frame preview and exposure math.
       </p>
     </div>
   );

@@ -1,8 +1,42 @@
-import { distance, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops, autoIso } from '../lib/calculations';
+import backgroundImage from '../assets/background.jpg';
+import playerImage from '../assets/player.png';
+import { useEffect, useRef, useState } from 'react';
+import { distance, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops, autoIso, getBackgroundInfo } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { getSelectedPlayer } from '../store/usePlannerStore';
 
+function computeBackgroundBlurPx(
+  focalLength: number,
+  aperture: number,
+  focusDistanceM: number,
+  backgroundDistanceM: number,
+  pxScale: number
+) {
+  const SENSOR_COC_MM = 0.03;
+  const focusMm = Math.max(focusDistanceM, 0.1) * 1000;
+  const backgroundMm = Math.max(backgroundDistanceM, focusDistanceM + 0.1) * 1000;
+  const f = focalLength; // already mm
+  const N = aperture;
+  const denominator = Math.max(1, focusMm - f);
+  const defocusCoC =
+    (f * f * Math.abs(backgroundMm - focusMm)) / (N * backgroundMm * denominator);
+  const effectiveCoC = Math.max(0, defocusCoC - SENSOR_COC_MM);
+  return Math.min(18, effectiveCoC * pxScale);
+}
+
 export default function PreviewFrame() {
+  const frameRef = useRef<HTMLDivElement | null>(null);
+  const [frameWidth, setFrameWidth] = useState(420);
+  useEffect(() => {
+    if (!frameRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (!entries[0]) return;
+      setFrameWidth(entries[0].contentRect.width);
+    });
+    observer.observe(frameRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const state = usePlannerStore();
   const player = getSelectedPlayer();
   const dist = distance(state.camera, player.position);
@@ -12,37 +46,53 @@ export default function PreviewFrame() {
   const autoIsoState = autoIso(state.lighting.ev100, state.aperture, state.shutter);
   const activeIso = state.mode === 'auto' ? autoIsoState.iso : state.iso;
   const diffStops = exposureDifferenceStops(state.lighting.ev100, state.aperture, state.shutter, activeIso);
-  const darkness = Math.max(0, Math.min(0.85, -diffStops * 0.15));
-  const overGlow = Math.max(0, diffStops > 0 ? diffStops * 0.08 : 0);
 
   const figureFillPercent = Math.max(6, Math.min(fill, 100));
+  const backgroundInfo = getBackgroundInfo(state.camera);
+  const backgroundDistance = Math.max(dist + 0.1, backgroundInfo.distance);
+  const pxScale = frameWidth / 36;
+  const backgroundBlur = computeBackgroundBlurPx(
+    state.focalLength,
+    state.aperture,
+    dist,
+    backgroundDistance,
+    pxScale
+  );
+  const brightnessFactor = Math.max(0.4, Math.min(1.65, 1 + diffStops * 0.35));
+  const overlayAlpha = Math.min(0.5, Math.abs(diffStops) * 0.12);
+  const overlayColor =
+    diffStops >= 0 ? `rgba(255,255,255,${overlayAlpha})` : `rgba(0,0,0,${overlayAlpha})`;
 
   return (
     <div className="panel preview-panel">
       <div className="flex-between">
         <h3 className="section-title">Preview & Analysis</h3>
-        <span className="tag">Canon R6 Mark II · Full-frame</span>
+        <span className="tag">Full-frame Camera</span>
       </div>
       <div className="preview-layout">
         <div className="preview-frame-shell">
-          <div className="preview-frame">
+          <div className="preview-frame" ref={frameRef}>
+            <img
+              src={backgroundImage}
+              alt="Grandstand background"
+              className="preview-background"
+              style={{ filter: `blur(${backgroundBlur.toFixed(2)}px) brightness(${brightnessFactor.toFixed(2)})` }}
+            />
             <div
               className="preview-brightness"
               style={{
-                background: `rgba(0,0,0,${darkness})`,
-                boxShadow: overGlow ? `inset 0 0 40px rgba(255,255,255,${overGlow})` : undefined
+                background: overlayColor
               }}
             />
-            <div
-              className="preview-figure"
+            <img
+              src={playerImage}
+              alt="Subject silhouette"
+              className="preview-player"
               style={{
                 height: `${figureFillPercent}%`,
-                bottom: 0
+                filter: `brightness(${brightnessFactor.toFixed(2)})`
               }}
-            >
-              <div className="head" />
-              <div className="body" />
-            </div>
+            />
           </div>
         </div>
         <div className="preview-metrics">

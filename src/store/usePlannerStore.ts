@@ -34,12 +34,12 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   players: [
     {
       id: 'p1',
-      label: 'Target Player',
+      label: 'Target Subject',
       position: { x: FIELD_LENGTH_M / 2, y: FIELD_WIDTH_M / 2 }
     },
     {
       id: 'p2',
-      label: 'Secondary',
+      label: 'Secondary Subject',
       position: { x: FIELD_LENGTH_M / 2 - 10, y: FIELD_WIDTH_M / 2 + 8 }
     }
   ],

@@ -1,5 +1,5 @@
 import { lightingPresets } from '../constants';
-import { autoIso, exposureDifferenceStops } from '../lib/calculations';
+import { autoIso, exposureDifferenceStops, STANDARD_ISO_VALUES, STANDARD_SHUTTER_VALUES, getApertureStopsInRange } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 export default function ExposureControls() {
@@ -19,6 +19,7 @@ export default function ExposureControls() {
   } = usePlannerStore();
 
   const apertureRange = lens.apertureAt(focalLength);
+  const apertureStops = getApertureStopsInRange(apertureRange.min, apertureRange.max);
   const autoIsoState = autoIso(lighting.ev100, aperture, shutter);
   const suggestedIso = autoIsoState.iso;
   const diffStops =
@@ -26,6 +27,27 @@ export default function ExposureControls() {
       ? exposureDifferenceStops(lighting.ev100, aperture, shutter, suggestedIso)
       : exposureDifferenceStops(lighting.ev100, aperture, shutter, iso);
   const exposureLabel = diffStops > 0.25 ? 'Over' : diffStops < -0.25 ? 'Under' : 'Balanced';
+
+  const findClosestIndex = (values: number[], target: number) => {
+    if (!values.length) return 0;
+    let closestIdx = 0;
+    let smallestDiff = Math.abs(values[0] - target);
+    for (let i = 1; i < values.length; i += 1) {
+      const diff = Math.abs(values[i] - target);
+      if (diff < smallestDiff) {
+        smallestDiff = diff;
+        closestIdx = i;
+      }
+    }
+    return closestIdx;
+  };
+
+  const isoValues = STANDARD_ISO_VALUES;
+  const manualIsoIndex = findClosestIndex(isoValues, iso);
+  const autoIsoIndex = findClosestIndex(isoValues, suggestedIso);
+  const shutterValues = STANDARD_SHUTTER_VALUES;
+  const shutterIndex = findClosestIndex(shutterValues, shutter);
+  const apertureIndex = findClosestIndex(apertureStops, aperture);
 
   return (
     <div className="panel">
@@ -57,41 +79,53 @@ export default function ExposureControls() {
         <div className="label">Aperture</div>
         <input
           type="range"
-          min={apertureRange.min}
-          max={Math.max(apertureRange.max, apertureRange.min + 0.1)}
-          step={0.1}
+          min={0}
+          max={Math.max(apertureStops.length - 1, 0)}
+          step={1}
           className="range"
-          value={aperture}
-          onChange={(e) => setAperture(Number(e.target.value))}
+          value={apertureIndex}
+          onChange={(e) => {
+            const idx = Number(e.target.value);
+            const nextValue = apertureStops[idx] ?? apertureStops[apertureStops.length - 1] ?? aperture;
+            setAperture(nextValue);
+          }}
         />
-        <div style={{ marginTop: 6 }}>f/{aperture.toFixed(1)}</div>
+        <div style={{ marginTop: 6 }}>f/{(apertureStops[apertureIndex] ?? aperture).toFixed(1)}</div>
       </div>
       <div style={{ marginTop: '1rem' }}>
         <div className="label">Shutter</div>
         <input
           type="range"
-          min={1 / 2000}
-          max={1 / 250}
-          step={0.0001}
+          min={0}
+          max={Math.max(shutterValues.length - 1, 0)}
+          step={1}
           className="range"
-          value={shutter}
-          onChange={(e) => setShutter(Number(e.target.value))}
+          value={shutterIndex}
+          onChange={(e) => {
+            const idx = Number(e.target.value);
+            const nextValue = shutterValues[idx] ?? shutterValues[shutterValues.length - 1] ?? shutter;
+            setShutter(nextValue);
+          }}
         />
         <div style={{ marginTop: 6 }}>
-          {`1/${Math.round(1 / shutter)}`} s
+          {`1/${Math.round(1 / (shutterValues[shutterIndex] ?? shutter))}`} s
         </div>
       </div>
       <div style={{ marginTop: '1rem' }}>
         <div className="label">ISO {mode === 'auto' ? '(computed)' : ''}</div>
         <input
           type="range"
-          min={100}
-          max={51200}
-          step={100}
+          min={0}
+          max={isoValues.length - 1}
+          step={1}
           disabled={mode === 'auto'}
           className="range"
-          value={mode === 'auto' ? suggestedIso : iso}
-          onChange={(e) => setIso(Number(e.target.value))}
+          value={mode === 'auto' ? autoIsoIndex : manualIsoIndex}
+          onChange={(e) => {
+            const idx = Number(e.target.value);
+            const nextIso = isoValues[Math.max(0, Math.min(idx, isoValues.length - 1))];
+            setIso(nextIso);
+          }}
         />
         <div style={{ marginTop: 6 }}>
           {mode === 'auto' ? suggestedIso.toFixed(0) : iso} {mode === 'manual' && ' (adjustable)'}
