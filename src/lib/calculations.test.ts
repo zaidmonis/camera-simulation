@@ -1,10 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { exposureDifferenceStops, frameFillPercent, recommendedIso, verticalFov } from './calculations';
+import { autoIso, exposureDifferenceStops, frameFillPercent, recommendedIso, verticalFov } from './calculations';
 
 describe('exposure math', () => {
   it('computes ISO for daylight settings', () => {
     const iso = recommendedIso(15, 4, 1 / 1000);
-    expect(Math.round(iso)).toBe(200);
+    expect(Math.round(iso)).toBe(50);
+  });
+
+  it('rounds auto ISO to nearest real-world step and clamps to range', () => {
+    const { iso: brightIso, raw } = autoIso(15, 4, 1 / 1000);
+    expect(raw).toBeLessThan(100);
+    expect(brightIso).toBe(100);
   });
 
   it('detects over exposure when ISO is too high', () => {

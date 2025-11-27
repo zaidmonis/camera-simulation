@@ -1,5 +1,5 @@
 import { lightingPresets } from '../constants';
-import { exposureDifferenceStops, recommendedIso } from '../lib/calculations';
+import { autoIso, exposureDifferenceStops } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 export default function ExposureControls() {
@@ -19,8 +19,12 @@ export default function ExposureControls() {
   } = usePlannerStore();
 
   const apertureRange = lens.apertureAt(focalLength);
-  const suggestedIso = recommendedIso(lighting.ev100, aperture, shutter);
-  const diffStops = exposureDifferenceStops(lighting.ev100, aperture, shutter, iso);
+  const autoIsoState = autoIso(lighting.ev100, aperture, shutter);
+  const suggestedIso = autoIsoState.iso;
+  const diffStops =
+    mode === 'auto'
+      ? exposureDifferenceStops(lighting.ev100, aperture, shutter, suggestedIso)
+      : exposureDifferenceStops(lighting.ev100, aperture, shutter, iso);
   const exposureLabel = diffStops > 0.25 ? 'Over' : diffStops < -0.25 ? 'Under' : 'Balanced';
 
   return (

@@ -1,4 +1,4 @@
-import { distance, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops } from '../lib/calculations';
+import { distance, frameFillPercent, horizontalFov, verticalFov, exposureDifferenceStops, autoIso } from '../lib/calculations';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { getSelectedPlayer } from '../store/usePlannerStore';
 
@@ -9,10 +9,9 @@ export default function PreviewFrame() {
   const fill = frameFillPercent(dist, state.playerHeight, state.focalLength);
   const hFovDeg = (horizontalFov(state.focalLength) * 180) / Math.PI;
   const vFovDeg = (verticalFov(state.focalLength) * 180) / Math.PI;
-  const diffStops =
-    state.mode === 'auto'
-      ? 0
-      : exposureDifferenceStops(state.lighting.ev100, state.aperture, state.shutter, state.iso);
+  const autoIsoState = autoIso(state.lighting.ev100, state.aperture, state.shutter);
+  const activeIso = state.mode === 'auto' ? autoIsoState.iso : state.iso;
+  const diffStops = exposureDifferenceStops(state.lighting.ev100, state.aperture, state.shutter, activeIso);
   const darkness = Math.max(0, Math.min(0.85, -diffStops * 0.15));
   const overGlow = Math.max(0, diffStops > 0 ? diffStops * 0.08 : 0);
 
