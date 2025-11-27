@@ -296,6 +296,7 @@ button.primary {
   width: 100%;
   height: clamp(220px, 30vh, 360px);
   display: block;
+  touch-action: none;
 }
 
 .legend {
