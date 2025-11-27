@@ -9,10 +9,7 @@ function Header() {
     <header style={{ padding: '1.25rem 1.5rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
       <div style={{ width: 10, height: 28, borderRadius: 12, background: '#2563eb' }} />
       <div>
-        <div style={{ textTransform: 'uppercase', fontSize: '0.8rem', letterSpacing: '0.05em', color: '#475569' }}>
-          Kuala Lumpur Friendly Series · Dec 5–7 2025
-        </div>
-        <h1 style={{ margin: 0, fontSize: '1.5rem' }}>Lacrosse Sixes Camera Planner</h1>
+        <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Lacrosse Sixes Camera Planner</h1>
       </div>
     </header>
   );
@@ -65,14 +62,14 @@ export default function App() {
     <>
       <Header />
       <main className="app-shell">
-        <div>
+        <div className="left-column">
           <FieldView />
+          <PreviewFrame />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className="right-column">
           <LensControls />
           <ExposureControls />
           <Insights />
-          <PreviewFrame />
         </div>
       </main>
     </>
