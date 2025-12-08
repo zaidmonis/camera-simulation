@@ -2,11 +2,46 @@
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.6;
   font-weight: 400;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: var(--text-color);
+  background-color: var(--background);
+  --background: #f8fafc;
+  --text-color: #0f172a;
+  --text-muted: #475569;
   --panel-bg: #ffffff;
   --border: #e2e8f0;
   --accent: #2563eb;
+  --surface-muted: #f8fafc;
+  --input-bg: #ffffff;
+  --tag-bg: #e0f2fe;
+  --tag-text: #0369a1;
+  --panel-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+  --field-outline: #0f172a;
+  --field-line: #1e293b;
+  --metric-bg: #f8fafc;
+  --preview-border: #0f172a;
+  --preview-gradient-start: #0b172a;
+  --preview-gradient-mid: #0f172a;
+  --preview-gradient-end: #1e293b;
+}
+
+[data-theme='dark'] {
+  --background: #020617;
+  --text-color: #f1f5f9;
+  --text-muted: #cbd5f5;
+  --panel-bg: #0f172a;
+  --border: #1e293b;
+  --surface-muted: #0b1120;
+  --input-bg: #020617;
+  --tag-bg: #1d4ed8;
+  --tag-text: #e0f2fe;
+  --panel-shadow: 0 12px 30px rgba(0, 0, 0, 0.55);
+  --field-outline: #94a3b8;
+  --field-line: #475569;
+  --metric-bg: #0b1120;
+  --preview-border: #1e293b;
+  --preview-gradient-start: #020617;
+  --preview-gradient-mid: #0f172a;
+  --preview-gradient-end: #172554;
 }
 
 * {
@@ -23,8 +58,8 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow: hidden;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--background);
+  color: var(--text-color);
 }
 
 #root {
@@ -130,7 +165,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.04);
+  box-shadow: var(--panel-shadow);
   min-height: 0;
 }
 
@@ -139,7 +174,7 @@ body {
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .metric-grid {
@@ -152,13 +187,13 @@ body {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 0.75rem;
-  background: #f8fafc;
+  background: var(--metric-bg);
 }
 
 .metric strong {
   display: block;
   font-size: 0.85rem;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .metric span {
@@ -174,7 +209,7 @@ body {
 
 .label {
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text-muted);
   margin-bottom: 0.3rem;
 }
 
@@ -186,13 +221,13 @@ button {
 
 .input,
 select,
-button,
 .range {
   padding: 0.6rem 0.7rem;
   border-radius: 10px;
   border: 1px solid var(--border);
   width: 100%;
-  background: white;
+  background: var(--input-bg);
+  color: var(--text-color);
 }
 
 button.primary {
@@ -212,18 +247,49 @@ button.primary {
   display: inline-block;
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #0369a1;
+  background: var(--tag-bg);
+  color: var(--tag-text);
   font-weight: 600;
   font-size: 0.8rem;
 }
 
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+}
+
+.theme-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.theme-toggle-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 .preview-frame {
   position: relative;
-  background: linear-gradient(135deg, #0b172a 0%, #0f172a 45%, #1e293b 100%);
+  background: linear-gradient(
+    135deg,
+    var(--preview-gradient-start) 0%,
+    var(--preview-gradient-mid) 45%,
+    var(--preview-gradient-end) 100%
+  );
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #0f172a;
+  border: 1px solid var(--preview-border);
   min-height: 0;
   width: min(100%, 400px);
   max-width: 100%;
@@ -266,7 +332,7 @@ button.primary {
 }
 
 .field-wrapper {
-  background: white;
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.5rem;
@@ -311,7 +377,7 @@ button.primary {
   align-items: center;
   gap: 0.4rem;
   font-size: 0.9rem;
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .legend .dot {
@@ -349,11 +415,12 @@ button.primary {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--panel-bg);
   padding: 6px 10px;
   border-radius: 8px;
   font-size: 0.8rem;
   border: 1px solid var(--border);
+  color: var(--text-color);
 }
 
 .preview-panel {

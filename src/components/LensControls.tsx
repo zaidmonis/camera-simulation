@@ -82,7 +82,9 @@ export default function LensControls() {
         />
         <div className="flex-between" style={{ marginTop: 6 }}>
           <div>{focalLength.toFixed(0)} mm</div>
-          <div style={{ color: '#475569', fontSize: '0.9rem' }}>Supported: {lens.supportedFocals.join(', ')} mm</div>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Supported: {lens.supportedFocals.join(', ')} mm
+          </div>
         </div>
       </div>
       <div style={{ marginTop: '1rem' }}>

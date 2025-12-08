@@ -1,4 +1,5 @@
 export type Mode = 'auto' | 'manual';
+export type ThemeMode = 'light' | 'dark';
 
 export interface LensProfile {
   id: string;

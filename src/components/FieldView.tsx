@@ -135,7 +135,7 @@ export default function FieldView() {
               width={FIELD_LENGTH_M * 10}
               height={FIELD_WIDTH_M * 10}
               fill="url(#turf)"
-              stroke="#0f172a"
+              stroke="var(--field-outline)"
               strokeWidth={2}
               rx={12}
             />
@@ -152,11 +152,11 @@ export default function FieldView() {
               y1={0}
               x2={FIELD_LENGTH_M * 5}
               y2={FIELD_WIDTH_M * 10}
-              stroke="#1e293b"
+              stroke="var(--field-line)"
               strokeDasharray="8 6"
               strokeWidth={2}
             />
-            <g stroke="#1e293b" strokeWidth={2}>
+            <g stroke="var(--field-line)" strokeWidth={2}>
               <rect x={10} y={(FIELD_WIDTH_M * 10) / 2 - 90} width={40} height={180} fill="none" />
               <rect
                 x={FIELD_LENGTH_M * 10 - 50}
@@ -210,14 +210,14 @@ export default function FieldView() {
                   cy={player.position.y * 10}
                   r={9}
                   fill={player.id === selectedPlayerId ? '#2563eb' : '#38bdf8'}
-                  stroke="#0f172a"
+                  stroke="var(--field-outline)"
                   strokeWidth={2}
                 />
                 <text
                   x={player.position.x * 10 + 14}
                   y={player.position.y * 10 - 14}
                   fontSize={24}
-                  fill="#0f172a"
+                  fill="var(--text-color)"
                 >
                   {player.label}
                 </text>

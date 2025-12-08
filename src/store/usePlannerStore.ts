@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { DEFAULT_PLAYER_HEIGHT, FIELD_LENGTH_M, FIELD_WIDTH_M, lenses, lightingPresets } from '../constants';
-import { LensProfile, LightingPreset, Mode, Player } from '../types';
+import { LensProfile, LightingPreset, Mode, Player, ThemeMode } from '../types';
 
 interface PlannerState {
   camera: { x: number; y: number };
@@ -14,6 +14,7 @@ interface PlannerState {
   mode: Mode;
   lighting: LightingPreset;
   playerHeight: number;
+  theme: ThemeMode;
   setCamera: (pos: { x: number; y: number }) => void;
   movePlayer: (id: string, pos: { x: number; y: number }) => void;
   setSelectedPlayer: (id: string) => void;
@@ -25,6 +26,7 @@ interface PlannerState {
   setMode: (mode: Mode) => void;
   setLighting: (id: string) => void;
   setPlayerHeight: (height: number) => void;
+  setTheme: (mode: ThemeMode) => void;
 }
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
@@ -52,6 +54,7 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   mode: 'auto',
   lighting: lightingPresets[5],
   playerHeight: DEFAULT_PLAYER_HEIGHT,
+  theme: 'light',
   setCamera: (pos) =>
     set(() => ({
       camera: {
@@ -98,7 +101,8 @@ export const usePlannerStore = create<PlannerState>((set, get) => ({
   setIso: (iso) => set(() => ({ iso })),
   setMode: (mode) => set(() => ({ mode })),
   setLighting: (id) => set(() => ({ lighting: lightingPresets.find((p) => p.id === id) ?? lightingPresets[0] })),
-  setPlayerHeight: (height) => set(() => ({ playerHeight: clamp(height, 1.4, 2.2) }))
+  setPlayerHeight: (height) => set(() => ({ playerHeight: clamp(height, 1.4, 2.2) })),
+  setTheme: (mode) => set(() => ({ theme: mode }))
 }));
 
 export const getSelectedPlayer = () => {
